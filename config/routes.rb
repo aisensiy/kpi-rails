@@ -4,6 +4,7 @@ Rails.application.routes.draw do
     post :login, on: :collection
     post :logout, on: :collection
     post :assigned, on: :member
+    get :tasks, on: :member
   end
 
   resources :projects, only: [:create, :show, :index], defaults: {format: :json} do

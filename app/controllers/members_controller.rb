@@ -2,6 +2,10 @@ class MembersController < ApplicationController
   respond_to :json
   before_filter :authenticate, except: [:login]
 
+  def tasks
+    @tasks = Event.task_for_member(params[:id])
+  end
+
   def show
     @member = Member.find(params[:id])
     if @member.nil?

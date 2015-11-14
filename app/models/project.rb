@@ -2,7 +2,7 @@ class Project
   include Mongoid::Document
   field :name, type: String
 
-  embeds_many :tasks
+  has_many :tasks
   validates_presence_of :name
   has_many :project_assignments
 

@@ -4,15 +4,15 @@ RSpec.describe "Members", type: :request do
   describe "create new member" do
     it "should 403 without admin login" do
       employee = create :employee
-      post "/members/login", { password: employee.password, name: employee.name }
-      post "/members", member: { name: 'abc', password: 'bb', role: 'employee' }
+      post "/members/login", {password: employee.password, name: employee.name}
+      post "/members", member: {name: 'abc', password: 'bb', role: 'employee'}
       expect(response).to have_http_status(403)
     end
 
     it "create new member with valide input" do
       admin = create :admin
-      post "/members/login", { password: admin.password, name: admin.name }
-      post "/members", member: { name: 'abc', password: 'bb', role: 'employee' }
+      post "/members/login", {password: admin.password, name: admin.name}
+      post "/members", member: {name: 'abc', password: 'bb', role: 'employee'}
       member = Member.order_by(created_at: :desc).first
       expect(response).to have_http_status(201)
       expect(response.headers['Location']).to end_with("/members/#{member.id}")
@@ -20,7 +20,7 @@ RSpec.describe "Members", type: :request do
 
     it 'should fail with invalid input' do
       admin = create :admin
-      post "/members/login", { password: admin.password, name: admin.name }
+      post "/members/login", {password: admin.password, name: admin.name}
       post "/members", member: {name: 'bb'}
       expect(response).to have_http_status(400)
     end
@@ -29,7 +29,7 @@ RSpec.describe "Members", type: :request do
   describe "login" do
     it "should 400 if wrong password or username" do
       employee = create(:employee)
-      post "/members/login", { name: "asdf", password: "ddd" }
+      post "/members/login", {name: "asdf", password: "ddd"}
       expect(response).to have_http_status(400)
     end
   end
@@ -37,7 +37,7 @@ RSpec.describe "Members", type: :request do
   describe "logout" do
     it "should logout" do
       admin = create :admin
-      post "/members/login", { password: admin.password, name: admin.name }
+      post "/members/login", {password: admin.password, name: admin.name}
       post "/members/logout"
       expect(response).to have_http_status(200)
       post "/members", member: {name: 'bb'}
@@ -108,6 +108,28 @@ RSpec.describe "Members", type: :request do
 
       post "/members/#{member.id}/assigned", team_id: 12
       expect(response).to have_http_status 404
+    end
+  end
+
+  describe "list tasks working on" do
+    it 'list tasks' do
+      @manager = create :manager
+      @employee = create :employee
+      @team = create :teamOne
+      @project = create :projectOne
+      @manager.assign_to @team
+      @team.assign_to @project
+
+      task1 = @project.tasks.create(name: 'task1', description: 't', team_id: @team.id.to_s, member_id: @manager.id.to_s)
+      task1.assign_to @manager, @employee
+      task2 = @project.tasks.create(name: 'task2', description: 't', team_id: @team.id.to_s, member_id: @manager.id.to_s)
+
+      login @employee
+      get "/members/#{@employee.id}/tasks"
+      expect(response).to have_http_status 200
+      data = JSON.parse response.body
+      expect(data.size).to eq(1)
+      expect(data[0]["name"]).to eq(task1.name)
     end
   end
 end
