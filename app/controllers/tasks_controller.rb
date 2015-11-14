@@ -58,6 +58,23 @@ class TasksController < ApplicationController
     render nothing: true, status: 200
   end
 
+  def transferred
+    unless find
+      return
+    end
+
+    unless manager_of_project?
+      return
+    end
+
+    team = Team.find(params[:team_id])
+    if team.nil?
+      render status: 400, nothing: true
+    end
+    @task.transfer current_user, team
+    render status: 200, nothing: true
+  end
+
   private
 
   # Never trust parameters from the scary internet, only allow the white list through.

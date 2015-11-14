@@ -92,4 +92,21 @@ RSpec.describe "Tasks", type: :request do
       expect(response).to have_http_status 404
     end
   end
+
+  describe "transfer task to other team" do
+    before :each do
+      @task = @project.tasks.create(
+          name: 'abc',
+          description: 'bbc',
+          team_id: @manager.assign.id,
+          member_id: @manager.id)
+    end
+
+    it "should transfer success" do
+      login @manager
+      team2 = create :teamTwo
+      post "/projects/#{@project.id}/tasks/#{@task.id}/transferred", team_id: team2.id.to_s
+      expect(response).to have_http_status 200
+    end
+  end
 end
