@@ -41,4 +41,8 @@ class Task
   def cancel(by)
     self.events.create member: by, team: by.assign, status: :cancelled
   end
+
+  def transfer(by, to)
+    self.events.create member: by, team: by.assign, transfer_to: to.id, status: :transferred
+  end
 end
