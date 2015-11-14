@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
   before_filter :authenticate
-  before_action :set_task, only: [:show, :edit, :update, :destroy]
+  before_action :set_attributes, only: [:show, :edit, :update, :destroy]
 
   # GET /tasks
   # GET /tasks.json
@@ -25,16 +25,20 @@ class TasksController < ApplicationController
   # POST /tasks
   # POST /tasks.json
   def create
-    @task = Task.new(task_params)
+    @project = Project.find(params[:project_id])
+    @task = @project.tasks.build(task_params)
+    current_user_project = current_user.assign.try(:assign)
 
-    respond_to do |format|
-      if @task.save
-        format.html { redirect_to @task, notice: 'Task was successfully created.' }
-        format.json { render :show, status: :created, location: @task }
-      else
-        format.html { render :new }
-        format.json { render json: @task.errors, status: :unprocessable_entity }
-      end
+    if current_user_project != @project || !current_user.manager?
+      render nothing: true, status: 403
+      return
+    end
+    @task.team_id = current_user.assign.id
+
+    if @task.save
+      render nothing: true, status: :created, location: project_task_url(@project, @task)
+    else
+      render nothing: true, status: 400
     end
   end
 
@@ -50,12 +54,13 @@ class TasksController < ApplicationController
 
   private
     # Use callbacks to share common setup or constraints between actions.
-    def set_task
+    def set_attributes
       @task = Task.find(params[:id])
+      @project = Project.find(params[:project_id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def task_params
-      params[:task]
+      params.require(:task).permit(:name, :description)
     end
 end

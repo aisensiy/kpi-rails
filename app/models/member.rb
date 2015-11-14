@@ -20,6 +20,6 @@ class Member
   end
 
   def assign
-    assignments.where(current: true).first.team
+    assignments.where(current: true).first.try(:team)
   end
 end
