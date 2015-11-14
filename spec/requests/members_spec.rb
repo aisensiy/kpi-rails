@@ -78,8 +78,4 @@ RSpec.describe "Members", type: :request do
       expect(first["name"]).to eq("name_0")
     end
   end
-
-  def login(member)
-    post "/members/login", { name: member.name, password: member.password }
-  end
 end

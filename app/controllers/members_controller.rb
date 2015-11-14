@@ -15,10 +15,6 @@ class MembersController < ApplicationController
 
   def create
     authorize! :create, Member.new
-    # unless current_user.admin?
-    #   render nothing: true, status: 403
-    #   return
-    # end
     @member = Member.new member_params
     if @member.save
       render nothing: true, status: :created, location: @member

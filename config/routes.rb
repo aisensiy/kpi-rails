@@ -4,6 +4,10 @@ Rails.application.routes.draw do
     post :login, on: :collection
     post :logout, on: :collection
   end
+
+  resources :teams, only: [:create, :show, :index], defaults: {format: :json} do
+
+  end
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
