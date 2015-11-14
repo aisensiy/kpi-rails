@@ -13,6 +13,18 @@ class MembersController < ApplicationController
     @members = Member.all
   end
 
+  def assigned
+    authorize! :assigned, Member.new
+    member = Member.find(params[:id])
+    team = Team.find(params[:team_id])
+    if team.nil? || member.nil?
+      render status: 404, nothing: true
+    else
+      member.assign_to team
+      render nothing: true, status: 200
+    end
+  end
+
   def create
     authorize! :create, Member.new
     @member = Member.new member_params

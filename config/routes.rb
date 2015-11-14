@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :members, only: [:create, :show, :index], defaults: {format: :json} do
     post :login, on: :collection
     post :logout, on: :collection
+    post :assigned, on: :member
   end
 
   resources :projects, only: [:create, :show, :index], defaults: {format: :json} do
