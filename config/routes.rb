@@ -5,6 +5,10 @@ Rails.application.routes.draw do
     post :logout, on: :collection
   end
 
+  resources :projects, only: [:create, :show, :index], defaults: {format: :json} do
+
+  end
+
   resources :teams, only: [:create, :show, :index], defaults: {format: :json} do
 
   end
