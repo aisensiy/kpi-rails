@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get 'events/index'
+
+  resources :kpis, only: [:create, :show, :index], defaults: {format: :json}
+
   resources :blogs
   resources :members, only: [:create, :show, :index], defaults: {format: :json} do
     post :login, on: :collection
