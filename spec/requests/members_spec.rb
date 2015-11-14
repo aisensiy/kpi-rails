@@ -25,4 +25,23 @@ RSpec.describe "Members", type: :request do
       expect(response).to have_http_status(400)
     end
   end
+
+  describe "login" do
+    it "should 400 if wrong password or username" do
+      employee = create(:employee)
+      post "/members/login", { name: employee.name, password: "ddd" }
+      expect(response).to have_http_status(400)
+    end
+  end
+
+  describe "logout" do
+    it "should logout" do
+      admin = create :admin
+      post "/members/login", { password: admin.password, name: admin.name }
+      post "/members/logout"
+      expect(response).to have_http_status(200)
+      post "/members", member: {name: 'bb'}
+      expect(response).to have_http_status(401)
+    end
+  end
 end
