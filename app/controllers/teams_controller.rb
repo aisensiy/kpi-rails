@@ -24,6 +24,10 @@ class TeamsController < ApplicationController
     end
   end
 
+  def tasks
+    @tasks = Event.task_for_team params[:id]
+  end
+
   private
   def team_params
     params.require(:team).permit([:name])

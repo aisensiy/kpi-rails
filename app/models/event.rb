@@ -21,4 +21,10 @@ class Event
   def self.task_for_member member_id
     Event.where(current: true).any_of({assign_to: member_id}, {member_id: member_id}).map { |event| Task.find(event.task_id) }
   end
+
+  def self.task_for_team team_id
+    Event.where(current: true).any_of(
+        {team_id: team_id, :status.ne => :transferred},
+        {transfer_to: team_id}).map { |event| Task.find(event.task_id) }
+  end
 end
