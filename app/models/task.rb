@@ -49,4 +49,8 @@ class Task
   def assign_to(by, to)
     self.events.create member: by, team: current_team, assign: to.id, status: :assigned
   end
+
+  def finish(by)
+    self.events.create member: by, team: current_team, status: :finished
+  end
 end
