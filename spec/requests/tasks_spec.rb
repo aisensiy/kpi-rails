@@ -64,4 +64,32 @@ RSpec.describe "Tasks", type: :request do
       expect(response).to have_http_status 404
     end
   end
+
+  describe "should cancel task" do
+    before :each do
+      @task = @project.tasks.create(
+          name: 'abc',
+          description: 'bbc',
+          team_id: @manager.assign.id,
+          member_id: @manager.id)
+    end
+
+    it "should cancel task" do
+      login @manager
+      delete "/projects/#{@project.id}/tasks/#{@task.id}"
+      expect(response).to have_http_status 200
+    end
+
+    it "should 403 if not manger of the team" do
+      login @employee
+      delete "/projects/#{@project.id}/tasks/#{@task.id}"
+      expect(response).to have_http_status 403
+    end
+
+    it "should 404 if project or task not found" do
+      login @employee
+      delete "/projects/#{@project.id}/tasks/213"
+      expect(response).to have_http_status 404
+    end
+  end
 end

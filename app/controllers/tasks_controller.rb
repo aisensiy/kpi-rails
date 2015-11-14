@@ -10,17 +10,11 @@ class TasksController < ApplicationController
   # GET /tasks/1
   # GET /tasks/1.json
   def show
-    @project = Project.find(params[:project_id])
-    if @project.nil?
-      render nothing: true, status: 404
-      return
-    end
-    @task = @project.tasks.find(params[:id])
-    if @task.nil?
-      render nothing: true, status: 404
+    unless find
       return
     end
   end
+
 
   # GET /tasks/new
   def new
@@ -36,9 +30,8 @@ class TasksController < ApplicationController
   def create
     @project = Project.find(params[:project_id])
     @task = @project.tasks.build(task_params)
-    current_user_project = current_user.assign.try(:assign)
-    if current_user_project != @project || !current_user.manager?
-      render nothing: true, status: 403
+
+    unless manager_of_project?
       return
     end
 
@@ -55,17 +48,44 @@ class TasksController < ApplicationController
   # DELETE /tasks/1
   # DELETE /tasks/1.json
   def destroy
-    @task.destroy
-    respond_to do |format|
-      format.html { redirect_to tasks_url, notice: 'Task was successfully destroyed.' }
-      format.json { head :no_content }
+    unless find
+      return
     end
+    unless manager_of_project?
+      return
+    end
+    @task.cancel(current_user)
+    render nothing: true, status: 200
   end
 
   private
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def task_params
-      params.require(:task).permit(:name, :description)
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def task_params
+    params.require(:task).permit(:name, :description)
+  end
+
+  def manager_of_project?
+    current_user_project = current_user.assign.try(:assign)
+    if current_user_project != @project || !current_user.manager?
+      render nothing: true, status: 403
+      return false
     end
+    return true
+  end
+
+  def find
+    @project = Project.find(params[:project_id])
+    if @project.nil?
+      render nothing: true, status: 404
+      return false
+    end
+    @task = @project.tasks.find(params[:id])
+    if @task.nil?
+      render nothing: true, status: 404
+      return false
+    end
+    return true
+  end
+
 end
