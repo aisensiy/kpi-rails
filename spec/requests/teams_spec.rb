@@ -46,4 +46,23 @@ RSpec.describe "Teams", type: :request do
       expect(response).to have_http_status(404)
     end
   end
+
+  describe "list teams" do
+    it 'should get a list of teams' do
+      team = create :teamOne
+      5.times do |i|
+        create :teamOne, name: "team_#{i}"
+      end
+
+      employee = create :employee
+      login(employee)
+
+      get "/teams"
+      expect(response).to have_http_status(200)
+      data = JSON.parse(response.body)
+      expect(data.size).to eq(6)
+      first = data[0]
+      expect(first["url"]).to end_with("/teams/#{team.id}")
+    end
+  end
 end

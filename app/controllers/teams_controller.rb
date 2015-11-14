@@ -3,6 +3,7 @@ class TeamsController < ApplicationController
   before_filter :authenticate
 
   def index
+    @teams = Team.all
   end
 
   def create
