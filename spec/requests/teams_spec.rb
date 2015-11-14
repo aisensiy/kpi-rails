@@ -27,4 +27,23 @@ RSpec.describe "Teams", type: :request do
       expect(response).to have_http_status(403)
     end
   end
+
+  describe "get one team" do
+    it "should get one team" do
+      team = create :teamOne
+      employee = create :employee
+      login(employee)
+      get "/teams/#{team.id}"
+      expect(response).to have_http_status(200)
+      data = JSON.parse(response.body)
+      expect(data["name"]).to eq(team.name)
+    end
+
+    it 'should 404 with team not found' do
+      employee = create :employee
+      login(employee)
+      get "/teams/1"
+      expect(response).to have_http_status(404)
+    end
+  end
 end

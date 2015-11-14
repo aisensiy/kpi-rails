@@ -16,6 +16,11 @@ class TeamsController < ApplicationController
   end
 
   def show
+    @team = Team.find(params[:id])
+    if @team.nil?
+      render nothing: true, status: 404
+      return
+    end
   end
 
   private
