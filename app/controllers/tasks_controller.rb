@@ -1,5 +1,6 @@
 class TasksController < ApplicationController
   before_filter :authenticate
+  before_filter :find, :manager_of_project, :cancelled_or_finished, except: [:create, :index]
 
   # GET /tasks
   # GET /tasks.json
@@ -31,7 +32,9 @@ class TasksController < ApplicationController
     @project = Project.find(params[:project_id])
     @task = @project.tasks.build(task_params)
 
-    unless manager_of_project?
+    current_user_project = current_user.assign.try(:assign)
+    if current_user_project != @project || !current_user.manager?
+      render nothing: true, status: 403
       return
     end
 
@@ -48,10 +51,14 @@ class TasksController < ApplicationController
   # DELETE /tasks/1
   # DELETE /tasks/1.json
   def destroy
-    unless find
-      return
-    end
-    unless manager_of_project?
+    # unless find
+    #   return
+    # end
+    # unless manager_of_project?
+    #   return
+    # end
+    if [:finished, :cancelled].include? @task.status
+      render status: 405, nothing: true
       return
     end
     @task.cancel(current_user)
@@ -59,11 +66,16 @@ class TasksController < ApplicationController
   end
 
   def transferred
-    unless find
-      return
-    end
+    # unless find
+    #   return
+    # end
+    #
+    # unless manager_of_project?
+    #   return
+    # end
 
-    unless manager_of_project?
+    if [:finished, :cancelled].include? @task.status
+      render status: 405, nothing: true
       return
     end
 
@@ -75,6 +87,22 @@ class TasksController < ApplicationController
     render status: 200, nothing: true
   end
 
+  def finished
+    @task.finish current_user
+    render status: 200, nothing: true
+  end
+
+  def assigned
+    member = Member.find params[:member_id]
+    if member.nil? || current_user.assign != member.assign
+      render status: 400, nothing: true
+      return
+    end
+
+    @task.assign_to current_user, member
+    render status: 200, nothing: true
+  end
+
   private
 
   # Never trust parameters from the scary internet, only allow the white list through.
@@ -82,13 +110,17 @@ class TasksController < ApplicationController
     params.require(:task).permit(:name, :description)
   end
 
-  def manager_of_project?
+  def manager_of_project
     current_user_project = current_user.assign.try(:assign)
     if current_user_project != @project || !current_user.manager?
       render nothing: true, status: 403
-      return false
     end
-    return true
+  end
+
+  def cancelled_or_finished
+    if [:finished, :cancelled].include? @task.status
+      render status: 405, nothing: true
+    end
   end
 
   def find

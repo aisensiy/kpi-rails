@@ -10,6 +10,8 @@ Rails.application.routes.draw do
     post :assigned, on: :member
     resources :tasks, only: [:create, :show, :index, :destroy], defaults: {format: :json} do
       post :transferred, on: :member
+      post :finished, on: :member
+      post :assigned, on: :member
     end
   end
 

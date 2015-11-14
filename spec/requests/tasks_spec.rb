@@ -10,6 +10,12 @@ RSpec.describe "Tasks", type: :request do
     @employee.assign_to @team
     @manager.assign_to @team
     @team.assign_to @project
+
+    @task = @project.tasks.create(
+        name: 'abc',
+        description: 'bbc',
+        team_id: @manager.assign.id,
+        member_id: @manager.id)
   end
 
   after(:each) do
@@ -23,7 +29,7 @@ RSpec.describe "Tasks", type: :request do
       post "/projects/#{@project.id}/tasks", task: task
       expect(response).to have_http_status 201
       @project.reload
-      task = @project.tasks.first
+      task = @project.tasks.last
       expect(response.headers["Location"]).to end_with(project_task_url(@project, task))
     end
 
@@ -66,14 +72,6 @@ RSpec.describe "Tasks", type: :request do
   end
 
   describe "should cancel task" do
-    before :each do
-      @task = @project.tasks.create(
-          name: 'abc',
-          description: 'bbc',
-          team_id: @manager.assign.id,
-          member_id: @manager.id)
-    end
-
     it "should cancel task" do
       login @manager
       delete "/projects/#{@project.id}/tasks/#{@task.id}"
@@ -94,19 +92,50 @@ RSpec.describe "Tasks", type: :request do
   end
 
   describe "transfer task to other team" do
-    before :each do
-      @task = @project.tasks.create(
-          name: 'abc',
-          description: 'bbc',
-          team_id: @manager.assign.id,
-          member_id: @manager.id)
-    end
 
     it "should transfer success" do
       login @manager
       team2 = create :teamTwo
       post "/projects/#{@project.id}/tasks/#{@task.id}/transferred", team_id: team2.id.to_s
       expect(response).to have_http_status 200
+    end
+
+    it "should 405 if finished or cancelled" do
+      login @manager
+      @task.cancel @manager
+      team2 = create :teamTwo
+      post "/projects/#{@project.id}/tasks/#{@task.id}/transferred", team_id: team2.id.to_s
+      expect(response).to have_http_status 405
+    end
+  end
+
+  describe "finish task" do
+    it "should finish task" do
+      login @manager
+      post "/projects/#{@project.id}/tasks/#{@task.id}/finished"
+      expect(response).to have_http_status 200
+    end
+
+    it "should 405 if cancelled or finished" do
+      login @manager
+      @task.cancel @manager
+      post "/projects/#{@project.id}/tasks/#{@task.id}/finished"
+      expect(response).to have_http_status 405
+    end
+  end
+
+  describe "assign task" do
+    it "should assign to own member" do
+      login @manager
+      post "/projects/#{@project.id}/tasks/#{@task.id}/assigned", member_id: @employee.id
+      expect(response).to have_http_status 200
+    end
+
+    it "should 400 if assign to other team's member" do
+      member = create :employee, name: 'other'
+      login @manager
+      post "/projects/#{@project.id}/tasks/#{@task.id}/assigned", member_id: member.id
+      expect(response).to have_http_status 400
     end
   end
 end
