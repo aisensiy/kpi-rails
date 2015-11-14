@@ -1,11 +1,16 @@
 class MembersController < ApplicationController
   respond_to :json
+  before_filter :authorize, except: [:login]
 
   def show
     @member = Member.find(params[:id])
   end
 
   def create
+    unless current_user.admin?
+      render nothing: true, status: 403
+      return
+    end
     @member = Member.new member_params
     if @member.save
       render nothing: true, status: :created, location: @member

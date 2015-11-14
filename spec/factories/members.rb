@@ -10,4 +10,10 @@ FactoryGirl.define do
     password "123"
     role "employee"
   end
+
+  factory :admin, class: Member do
+    name "admin"
+    password "123"
+    role :admin
+  end
 end

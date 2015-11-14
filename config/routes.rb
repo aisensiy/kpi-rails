@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   resources :blogs
-  resources :members, only: [:create, :show] do
+  resources :members, only: [:create, :show, :index] do
     post :login, on: :collection
     post :logout, on: :collection
   end
