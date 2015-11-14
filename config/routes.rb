@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   end
 
   resources :projects, only: [:create, :show, :index], defaults: {format: :json} do
-
+    post :assigned, on: :member
   end
 
   resources :teams, only: [:create, :show, :index], defaults: {format: :json} do

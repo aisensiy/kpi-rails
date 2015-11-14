@@ -9,6 +9,7 @@ class Ability
     else
       can :read, :all
       cannot :assigned, Member
+      cannot :assigned, Team
     end
     # Define abilities for the passed in user here. For example:
     #

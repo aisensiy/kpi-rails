@@ -65,4 +65,36 @@ RSpec.describe "Projects", type: :request do
       expect(first["url"]).to end_with("/projects/#{project.id}")
     end
   end
+
+  describe "assign project to team" do
+    it "should assign project to a team by admin" do
+      team = create :teamOne
+      project = create :projectOne
+      admin = create :admin
+      login admin
+
+      post "/projects/#{project.id}/assigned", team_id: team.id
+      expect(response).to have_http_status 200
+      expect(team.assign).to eq(project)
+    end
+
+    it "should 403 if not a admin" do
+      team = create :teamOne
+      project = create :projectOne
+      employee = create :employee
+      login employee
+
+      post "/projects/#{project.id}/assigned", team_id: team.id
+      expect(response).to have_http_status 403
+    end
+
+    it "should 404 if project or team not exists" do
+      project = create :projectOne
+      admin = create :admin
+      login admin
+
+      post "/projects/#{project.id}/assigned", team_id: 123
+      expect(response).to have_http_status 404
+    end
+  end
 end

@@ -15,6 +15,18 @@ class ProjectsController < ApplicationController
     @projects = Project.all
   end
 
+  def assigned
+    authorize! :assigned, Team.new
+    @project = Project.find(params[:id])
+    team = Team.find(params[:team_id])
+    if team.nil? || @project.nil?
+      render status: 404, nothing: true
+    else
+      team.assign_to @project
+      render status: 200, nothing: true
+    end
+  end
+
   def show
     @project = Project.find(params[:id])
     if @project.nil?
