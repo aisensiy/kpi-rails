@@ -35,4 +35,33 @@ RSpec.describe "Tasks", type: :request do
       expect(response).to have_http_status 403
     end
   end
+
+  describe "get one task" do
+    it 'should get one task including events' do
+      login @manager
+      task = @project.tasks.create(
+          name: 'abc',
+          description: 'bbc',
+          team_id: @manager.assign.id,
+          member_id: @manager.id)
+
+      get "/projects/#{@project.id}/tasks/#{task.id}"
+      expect(response).to have_http_status 200
+      data = JSON.parse(response.body)
+      expect(data["name"]).to eq(task.name)
+      expect(data["events"].size).to eq(1)
+      team2 = create :teamTwo
+      task.transfer(@manager, team2)
+
+      get "/projects/#{@project.id}/tasks/#{task.id}"
+      data = JSON.parse(response.body)
+      expect(data["events"].size).to eq(2)
+    end
+
+    it "should 404 if no such task" do
+      login @manager
+      get "/projects/#{@project.id}/tasks/123"
+      expect(response).to have_http_status 404
+    end
+  end
 end

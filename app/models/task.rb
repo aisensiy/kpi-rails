@@ -3,6 +3,7 @@ class Task
   field :name, type: String
   field :description, type: String
   field :team_id, type: String
+  field :member_id, type: String
 
   embedded_in :project
   has_many :events

@@ -1,6 +1,5 @@
 class TasksController < ApplicationController
   before_filter :authenticate
-  before_action :set_attributes, only: [:show, :edit, :update, :destroy]
 
   # GET /tasks
   # GET /tasks.json
@@ -11,6 +10,16 @@ class TasksController < ApplicationController
   # GET /tasks/1
   # GET /tasks/1.json
   def show
+    @project = Project.find(params[:project_id])
+    if @project.nil?
+      render nothing: true, status: 404
+      return
+    end
+    @task = @project.tasks.find(params[:id])
+    if @task.nil?
+      render nothing: true, status: 404
+      return
+    end
   end
 
   # GET /tasks/new
@@ -28,12 +37,13 @@ class TasksController < ApplicationController
     @project = Project.find(params[:project_id])
     @task = @project.tasks.build(task_params)
     current_user_project = current_user.assign.try(:assign)
-
     if current_user_project != @project || !current_user.manager?
       render nothing: true, status: 403
       return
     end
+
     @task.team_id = current_user.assign.id
+    @task.member_id = current_user.id
 
     if @task.save
       render nothing: true, status: :created, location: project_task_url(@project, @task)
@@ -53,11 +63,6 @@ class TasksController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_attributes
-      @task = Task.find(params[:id])
-      @project = Project.find(params[:project_id])
-    end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def task_params
