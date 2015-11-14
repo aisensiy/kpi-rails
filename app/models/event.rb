@@ -9,5 +9,10 @@ class Event
   field :team_id, type: String
   field :member_id, type: String
 
+  validates_presence_of :task_id
+
+  belongs_to :member
+  belongs_to :team
+
   belongs_to :task
 end
