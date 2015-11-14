@@ -12,7 +12,7 @@ class Task
   after_create :create_task_created_event
 
   def create_task_created_event
-    self.events.create status: :created
+    self.events.create team_id: self.team_id, status: :created
   end
 
   def current_team
@@ -44,5 +44,9 @@ class Task
 
   def transfer(by, to)
     self.events.create member: by, team: by.assign, transfer_to: to.id, status: :transferred
+  end
+
+  def assign_to(by, to)
+    self.events.create member: by, team: current_team, assign: to.id, status: :assigned
   end
 end

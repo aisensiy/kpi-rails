@@ -13,7 +13,7 @@ RSpec.describe Task, type: :model do
   it "should cancel task and create cancel event" do
     project = create :projectOne
     team = create :teamOne
-    member = create :memberOne
+    member = create :manager
     member.assign_to team
     team.assign_to project
 
@@ -27,7 +27,7 @@ RSpec.describe Task, type: :model do
   it 'should transfer task to other team' do
     project = create :projectOne
     team = create :teamOne
-    member = create :memberOne
+    member = create :manager
     member.assign_to team
     team.assign_to project
 
@@ -38,5 +38,23 @@ RSpec.describe Task, type: :model do
     task.transfer(member, team2)
     expect(task.status).to  eq(:transferred)
     expect(task.current_team).to eq(team2)
+  end
+
+  it 'should assign to member' do
+    project = create :projectOne
+    team = create :teamOne
+    member = create :manager
+    member.assign_to team
+    team.assign_to project
+
+    task = build :task, project: project, team_id: team.id
+    task.save
+
+    member2 = create :employee
+    member2.assign_to team
+    task.assign_to(member, member2)
+
+    expect(task.status).to eq(:assigned)
+    expect(task.assign).to eq(member2)
   end
 end
