@@ -9,6 +9,10 @@ class MembersController < ApplicationController
     end
   end
 
+  def index
+    @members = Member.all
+  end
+
   def create
     authorize! :create, Member.new
     # unless current_user.admin?

@@ -63,6 +63,22 @@ RSpec.describe "Members", type: :request do
     end
   end
 
+  describe "list members" do
+    it "should list members" do
+      5.times do |i|
+        create :employee, name: "name_#{i}"
+      end
+      member = create :employee
+      login(member)
+      get "/members"
+      expect(response).to have_http_status(200)
+      data = JSON.parse(response.body)
+      expect(data.size).to eq(6)
+      first = data[0]
+      expect(first["name"]).to eq("name_0")
+    end
+  end
+
   def login(member)
     post "/members/login", { name: member.name, password: member.password }
   end
