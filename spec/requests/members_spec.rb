@@ -29,7 +29,7 @@ RSpec.describe "Members", type: :request do
   describe "login" do
     it "should 400 if wrong password or username" do
       employee = create(:employee)
-      post "/members/login", { name: employee.name, password: "ddd" }
+      post "/members/login", { name: "asdf", password: "ddd" }
       expect(response).to have_http_status(400)
     end
   end
@@ -43,5 +43,27 @@ RSpec.describe "Members", type: :request do
       post "/members", member: {name: 'bb'}
       expect(response).to have_http_status(401)
     end
+  end
+
+  describe "get one member" do
+    it "should get one member" do
+      member = create :employee
+      login(member)
+      get "/members/#{member.id}"
+      expect(response).to have_http_status(200)
+      data = JSON.parse(response.body)
+      expect(data['name']).to eq(member.name)
+    end
+
+    it "should 404" do
+      member = create :employee
+      login(member)
+      get "/members/1"
+      expect(response).to have_http_status(404)
+    end
+  end
+
+  def login(member)
+    post "/members/login", { name: member.name, password: member.password }
   end
 end
