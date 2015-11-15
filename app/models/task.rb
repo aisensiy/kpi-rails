@@ -36,7 +36,7 @@ class Task
     if event.nil?
       nil
     else
-      Member.find(event.assign)
+      Member.find(event.assign_to)
     end
   end
 
